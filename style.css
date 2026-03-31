@@ -1,0 +1,229 @@
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  background-color: rgb(50, 50, 50);
+}
+
+label {
+  color: white;
+  font-family: Andale Mono,AndaleMono,monospace;
+
+  margin-top: 1%;
+  margin-bottom: 1%;
+}
+
+video {
+  border-radius: 10px;
+}
+
+progress {
+  width: 85%;
+
+  margin-top: 1%;
+  margin-bottom: 1%;
+}
+
+button {
+  background-color: rgb(20, 20, 20);
+  border-radius: 10px;
+  border: 1px solid rgb(15, 15, 15);
+
+  width: 45%;
+  height: 100%;
+
+  margin-left: 5%;
+  margin-right: 5%;
+
+  color: white;
+  font-family: Andale Mono,AndaleMono,monospace;
+}
+
+button:hover {
+  border: 1px solid rgb(150, 150, 150);
+}
+
+select {
+  background-color: rgb(20, 20, 20);
+  border-radius: 10px;
+  border: 1px solid rgb(15, 15, 15);
+
+  width: 50%;
+  height: 3%;
+
+  color: white;
+  font-family: Andale Mono,AndaleMono,monospace;
+
+  margin-top: 1%;
+  margin-bottom: 1%;
+}
+
+select:hover {
+  border: 1px solid rgb(150, 150, 150);
+}
+
+.checkbox {
+  color: rgb(20, 20, 20);
+}
+
+.size-input {
+  background-color: rgb(20, 20, 20);
+  border: 1px solid rgb(15, 15, 15);
+  border-radius: 10px;
+
+  width: 50%;
+  height: 3%;
+
+  color: white;
+  font-family: Andale Mono,AndaleMono,monospace;
+
+  margin-top: 1%;
+  margin-bottom: 1%;
+}
+
+.size-input:hover {
+  border: 1px solid rgb(150, 150, 150);
+}
+
+.file-input {
+  background: rgb(20, 20, 20);
+  border-radius: 10px;
+
+  color: white;
+  font-family: Andale Mono,AndaleMono,monospace;
+  font-size: medium;
+
+  margin-top: 1%;
+  margin-bottom: 1%;
+
+  border: 1px solid rgb(15, 15, 15);
+}
+
+.file-input:hover {
+  border: 1px solid rgb(150, 150, 150);
+}
+
+.file-input::file-selector-button {
+  background: rgb(20, 20, 20);
+  border-radius: 10px;
+  border: 0;
+
+  color: white;
+  font-weight: bold;
+  font-family: Andale Mono,AndaleMono,monospace;
+}
+
+.main-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  background-color: rgb(30, 30, 30);
+
+  border-radius: 10px;
+  border: 1px solid rgb(25, 25, 25);
+  padding: 20px;
+  margin: 1%;
+  height: 86%;
+}
+
+.horizontal-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  width: 100%;
+  height: 3%;
+
+  margin-top: 1%;
+  margin-bottom: 1%;
+}
+
+.checkbox-horizontal-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  margin-top: 1%;
+  margin-bottom: 1%;
+
+  gap: 5px;
+}
+
+.file-label {
+  color: rgb(100, 100, 100);
+  font-family: Andale Mono,AndaleMono,monospace;
+  white-space: pre-line;
+  text-align: center
+}
+
+.progress-percent-label {
+  display: inline-block;
+  text-align: right;
+
+  color: white;
+  font-weight: bold;
+  font-family: Andale Mono,AndaleMono,monospace;
+
+  margin-top: 1%;
+  margin-bottom: 1%;
+}
+
+.bottom-bar {
+    position: fixed;
+    z-index: 100; 
+    bottom: 0; 
+    left: 0;
+    width: 100%;
+    height: 5%;
+    background-color: rgb(30, 30, 30);
+}
+
+/* bottom bar */
+
+.version-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  position: absolute;
+  height: 100%;
+}
+
+.version-label {
+  color: rgb(100, 100, 100);
+  font-family: Andale Mono,AndaleMono,monospace;
+}
+
+.github-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100%;
+  margin-left: 1%;
+}
+
+.github-image {
+  width: 1.5%;
+  height: auto;
+}
+
+.github-link {
+  color: rgb(100, 100, 100);
+  font-weight: bold;
+  font-family: Andale Mono,AndaleMono,monospace;
+}
+
+.github-link:hover {
+  color: rgb(150, 150, 150);
+  font-weight: bold;
+  font-family: Andale Mono,AndaleMono,monospace;
+}

@@ -1,0 +1,233 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="main-box">
+      <video id="output-video" width="352" height="240" controls></video>
+
+      <Label>Version of app core</Label>
+      <select id="core-version">
+        <option value="single">Single-Thread</option>
+        
+        <!-- Very unstable on chromium-based browsers -->
+        <option value="multi">Multi-Thread (Unstable)</option>
+      </select>
+
+      <label>Format</label>
+      <select id="codec">
+        <option value="libx264">H.264</option>
+        <option value="libx265">H.265 (Multi-Thread Only)</option>
+      </select>
+
+      <label>Extension</label>
+      <select id="extension">
+        <option value="mp4">.mp4</option>
+        <option value="mkv">.mkv</option>
+        <option value="mov">.mov</option>
+        <option value="avi">.avi</option>
+      </select>
+
+      <label>Quality</label>
+      <label>Lower Quality = Higher Processing Speed</label>
+      <select id="quality">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+      </select>
+
+      <label>Size to compress to (in MB)</label>
+      <input type="text" id="size" class="size-input" placeholder="for example 10 or 8.5">
+      
+      <div class="checkbox-horizontal-container">
+        <label for="compressAudio">Automatic Download</label>
+        <input type="checkbox" name="Automatic Download" id="autoDownload" class="checkbox">
+      </div>
+
+      <div class="checkbox-horizontal-container">
+        <label for="compressAudio">Compress Audio</label>
+        <input type="checkbox" name="Compress Audio" id="compressAudio" class="checkbox">
+      </div>
+
+      <div class="checkbox-horizontal-container">
+        <label for="removeAudio">Remove Audio</label>
+        <input type="checkbox" name="Remove Audio" id="removeAudio" class="checkbox">
+      </div>
+
+      <label class="file-label">Supports only H.264 and H.265 video 
+      (2GB file size limit)</label>
+      <input type="file" id="uploader" class="file-input">
+      <p id="message" class="progress-percent-label"></p>
+
+      <progress id="video-progress" max="100" value="0"></progress>
+
+      <div class="horizontal-container">
+        <button id="start-button">Start</button>
+        <button id="download-button">Download</button>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="version-container">
+        <label class="version-label">Version 0.0.1</label>
+      </div>
+      <div class="github-container">
+        <img src="assets/images/GitHub_Invertocat_White_Clearspace.svg" class="github-image">
+        <a href="https://github.com/bszymala89" target="_blank" class="github-link">Source Code</a>
+      </div>
+    </div>
+
+    <script type="module">
+      import { FFmpeg } from "/assets/ffmpeg/package/dist/esm/index.js"
+      import { fetchFile, toBlobURL } from "https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.2/dist/esm/index.js"
+
+      let ffmpeg = null
+      let coreVersion = null
+
+      let downloadBlob = null
+      let downloadFileName = null
+
+      const minAudioBitrate = 32000
+      const maxAudioBitrate = 256000
+
+      function download(url, filename) {
+        if (downloadBlob != null && downloadFileName != null) {
+          fetch(downloadBlob)
+            .then(response => response.blob())
+            .then(blob => {
+              const link = document.createElement("a")
+              link.href = URL.createObjectURL(blob)
+              link.download = downloadFileName
+              link.click()
+          })
+          .catch(console.error)
+        }
+      }
+
+      function convertSizeToBitrate(size, duration) {
+        return (size * 1024 * 8) / (1.073741824 * duration)
+      }
+
+      const getVideoDuration = file => new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const media = new Audio(reader.result)
+          media.onloadedmetadata = () => resolve(media.duration)
+        }
+        reader.readAsDataURL(file)
+        reader.onerror = error => reject(error)
+      })
+
+      const transcode = async () => {
+        const message = document.getElementById('message')
+        const progressBar = document.getElementById("video-progress")
+        const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm'
+        const multiBaseURL = "https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.10/dist/esm"
+
+        const files = document.getElementById("uploader").files
+
+        if (ffmpeg === null || coreVersion != document.getElementById("core-version").value) {
+          if (document.getElementById("core-version").value == "single") {
+            var core = await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript')
+            var wasmCore = await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm')
+            coreVersion = "single"
+            console.log("loading single-thread core")
+          } else {
+            var core = await toBlobURL(`${multiBaseURL}/ffmpeg-core.js`, 'text/javascript')
+            var wasmCore = await toBlobURL(`${multiBaseURL}/ffmpeg-core.wasm`, 'application/wasm')
+            coreVersion = "multi"
+            console.log("loading multi-thread core")
+          }
+
+          ffmpeg = new FFmpeg()
+          ffmpeg.on("log", ({ message }) => {
+            console.log(message)
+          })
+          ffmpeg.on("progress", ({ progress }) => {
+            message.innerHTML = `${parseFloat(progress * 100).toFixed(1)} %`
+            progressBar.value = parseFloat(progress * 100).toFixed(1)
+          })
+          message.innerHTML = 'Loading FFmpeg'
+          
+          if (document.getElementById("core-version").value == "single") {
+            await ffmpeg.load({
+            coreURL: core,
+            wasmURL: wasmCore,
+          })
+          } else {
+            await ffmpeg.load({
+            coreURL: core,
+            wasmURL: wasmCore,
+            workerURL: await toBlobURL(`${multiBaseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
+          })}
+        }
+
+        const { name } = files[0]
+
+        await ffmpeg.writeFile(name, await fetchFile(files[0]))
+
+        await ffmpeg.ffprobe(["-v", "error", "-select_streams", "a:0", "-show_entries", "stream=bit_rate", "-of", "default=noprint_wrappers=1:nokey=1", name, "-o", "output.txt"])
+        const audioData = await ffmpeg.readFile("output.txt")
+
+        var codec = document.getElementById("codec").value
+        var quality = document.getElementById("quality").value
+        var extension = document.getElementById("extension").value
+
+        const duration = await getVideoDuration(files[0])
+        const size = document.getElementById("size").value
+
+        var audioBitrate = parseInt(await new Blob([audioData.buffer], { type: 'text/plain' }).text())
+        const totalBitrate = convertSizeToBitrate(parseInt(parseFloat(size) * 1000), duration)
+
+        var ffmpegArgs = ['-i', name, "-c:v", codec, "-preset", quality, "-b:v"]
+
+        if (document.getElementById("removeAudio").checked) {
+          ffmpegArgs.push(String(totalBitrate))
+          ffmpegArgs.push("-an")
+        } else if (document.getElementById("compressAudio").checked) {
+          if (10 * audioBitrate > totalBitrate) { audioBitrate = totalBitrate / 10 }
+          if (audioBitrate < minAudioBitrate < totalBitrate) {
+            audioBitrate = minAudioBitrate
+          } else if (audioBitrate > maxAudioBitrate) {
+            audioBitrate = maxAudioBitrate
+          }
+
+          ffmpegArgs.push(String(totalBitrate - audioBitrate))
+          ffmpegArgs.push("-b:a")
+          ffmpegArgs.push(String(audioBitrate))
+        } else {
+          ffmpegArgs.push(String(totalBitrate - audioBitrate))
+        }
+
+        ffmpegArgs.push('output.'+extension)
+
+        message.innerHTML = 'Started Compressing'
+        progressBar.value = 0
+        await ffmpeg.exec(ffmpegArgs)
+        message.innerHTML = 'Completed Compressing'
+        const data = await ffmpeg.readFile('output.'+extension)
+
+        downloadBlob = URL.createObjectURL(new Blob([data.buffer], { type: 'video/'+extension }))
+        downloadFileName = name.replace(/\.[^/.]+$/, "")+"_comp."+extension
+
+        const video = document.getElementById('output-video')
+        video.src = downloadBlob
+
+        if (document.getElementById("autoDownload").checked) {
+          download()
+        }
+      }
+      const start = document.getElementById("start-button")
+      const downloadBtn = document.getElementById("download-button")
+
+      start.addEventListener("click", transcode)
+      downloadBtn.addEventListener("click", download)
+    </script>
+    <script src="enable-threads.js"></script>
+  </body>
+</html>
